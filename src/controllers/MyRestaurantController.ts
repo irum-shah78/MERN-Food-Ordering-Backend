@@ -45,6 +45,21 @@ const createMyRestaurant = async (req: Request, res: Response) => {
   }
 };
 
+const updateMyRestaurant = async (req: Request, res: Response) => {
+  try {
+    const restaurant = await Restaurant.findOne({
+      user: req.userId,
+    });
+
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found." });
+    }
+  } catch (error) {
+    console.log("Error", error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
 export default {
   getMyRestaurant,
   createMyRestaurant,
