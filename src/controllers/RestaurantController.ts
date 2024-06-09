@@ -15,7 +15,14 @@ const searchRestaurant = async (req: Request, res: Response) => {
     query["city"] = new RegExp(city, "i");
     const cityCheck = await Restaurant.countDocuments(query);
     if (cityCheck === 0) {
-      return res.status(404).json([]);
+      return res.status(404).json({
+        data: [],
+        pagination: {
+          total: 0,
+          page: 1,
+          pages: 1,
+        },
+      });
     }
 
     if (selectedCuisines) {
@@ -32,8 +39,30 @@ const searchRestaurant = async (req: Request, res: Response) => {
       ];
     }
 
+    const pageSize = 10;
+    const skip = (page - 1) * pageSize;
+
+    const restaurants = await Restaurant.find(query).sort({ [sortOption]: 1 }).skip(skip).limit(pageSize).lean();
+
+    const total = await Restaurant.countDocuments(query);
+
+    const response = {
+      data: restaurants,
+      pagination: {
+        total,
+        page,
+        pages: Math.ceil(total / pageSize),
+      },
+    };
+
+    res.json(response);
+
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Something went wrong." });
   }
+};
+
+export default {
+  searchRestaurant,
 };
